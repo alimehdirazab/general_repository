@@ -1,7 +1,8 @@
 name: general_repository
 description: A general api repository to handle API responses
 version: 0.0.1
-publish_to: none
+homepage: https://github.com/alimehdirazab/general_repository
+repository: https://github.com/alimehdirazab/general_repository.git
 
 environment:
   sdk: '>=3.4.4 <4.0.0'
