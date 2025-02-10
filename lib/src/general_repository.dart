@@ -6,7 +6,9 @@ import 'dart:developer' as developer;
 import 'package:general_repository/general_repository.dart';
 import 'package:http/http.dart' as http;
 
+/// A repository class for handling API requests and responses.
 class GeneralRepository {
+  /// Creates an instance of [GeneralRepository].
   GeneralRepository({
     http.Client? client,
     required this.currentUserToken,
@@ -16,14 +18,34 @@ class GeneralRepository {
   }) : _client = client ?? http.Client();
 
   final http.Client _client;
+
+  /// The token of the current user.
+  ///
+  /// This token is used for authentication and authorization purposes
+  /// when making requests to the server.
   String currentUserToken;
+
+  /// The token used to refresh the authentication session.
+  ///
+  /// This token is typically used to obtain a new access token
+  /// when the current one expires.
   String refreshToken;
+
+  /// A callback function that updates the access and refresh tokens.
+  ///
+  /// This function is called with two parameters:
+  /// - `newAccessToken`: The new access token as a `String`.
+  /// - `newRefreshToken`: The new refresh token as a `String`.
   final void Function(String newAccessToken, String newRefreshToken)
       updateTokens;
+
+  /// A callback function that clears the user data.
   final void Function() clearUser;
 
+  /// Returns the current user token.
   String? get token => currentUserToken;
 
+  /// Adds an authorization header to the given [header] map.
   Map<String, String>? addAuthorizationHeader(Map<String, String>? header) {
     header ??= {};
     if (token != null &&
@@ -34,6 +56,7 @@ class GeneralRepository {
     return header;
   }
 
+  /// Adds a content type JSON header to the given [header] map.
   Map<String, String>? addContentTypeJsonHeader(Map<String, String>? header) {
     header ??= {};
     if (!header.containsKey('Content-Type')) {
@@ -42,6 +65,7 @@ class GeneralRepository {
     return header;
   }
 
+  /// Fetches a new token using the refresh token.
   Future<String?> fetchNewToken() async {
     final refreshHeader = <String, String>{
       "Authorization": "Bearer $refreshToken",
@@ -61,18 +85,15 @@ class GeneralRepository {
         final newRefreshToken = responseJson["refresh_token"];
 
         developer.log(
-          "Token Successfully Refreshed: ${refreshResponse.statusCode}",
-          name: 'fetchNewToken',
-        );
+            "Token Successfully Refreshed: ${refreshResponse.statusCode}",
+            name: 'fetchNewToken');
 
         updateTokens(newAccessToken, newRefreshToken);
 
         return newAccessToken;
       } else {
-        developer.log(
-          "Failed to refresh token: ${refreshResponse.statusCode}",
-          name: 'fetchNewToken',
-        );
+        developer.log("Failed to refresh token: ${refreshResponse.statusCode}",
+            name: 'fetchNewToken');
         clearUser();
         return null;
       }
@@ -91,10 +112,8 @@ class GeneralRepository {
     bool enableLogs = true,
   }) async {
     if (enableLogs) {
-      developer.log(
-        'Request Header: ${jsonEncode(header)}',
-        name: 'package.bloc_rest_api.$handle',
-      );
+      developer.log('Request Header: ${jsonEncode(header)}',
+          name: 'package.bloc_rest_api.$handle');
     }
 
     http.BaseResponse? rawResponse;
@@ -121,20 +140,18 @@ class GeneralRepository {
       throw TimeOutExceptionC();
     } finally {
       if (enableLogs) {
+        developer.log('Request Response Status: ${rawResponse?.statusCode}',
+            name: 'package.bloc_rest_api.$handle');
         developer.log(
-          'Request Response Status: ${rawResponse?.statusCode}',
-          name: 'package.bloc_rest_api.$handle',
-        );
-        developer.log(
-          'Request Raw Response: ${rawResponse is http.Response ? rawResponse.body : ''}',
-          name: 'package.bloc_rest_api.$handle',
-        );
+            'Request Raw Response: ${rawResponse is http.Response ? rawResponse.body : ''}',
+            name: 'package.bloc_rest_api.$handle');
       }
     }
 
     return responseJson;
   }
 
+  /// Sends a GET request to the specified [handle].
   Future<dynamic> get({
     required String handle,
     String? baseUrl,
@@ -155,6 +172,7 @@ class GeneralRepository {
     );
   }
 
+  /// Sends a POST request to the specified [handle] with the given [body].
   Future<dynamic> post({
     required String handle,
     dynamic body,
@@ -169,10 +187,8 @@ class GeneralRepository {
     var finalTimeout = timeOut ?? ApiConfig.responseTimeOut;
 
     if (enableLogs) {
-      developer.log(
-        'Request Body: $body',
-        name: 'package.bloc_rest_api.$handle',
-      );
+      developer.log('Request Body: $body',
+          name: 'package.bloc_rest_api.$handle');
     }
 
     return _handleRequest(
@@ -184,6 +200,7 @@ class GeneralRepository {
     );
   }
 
+  /// Sends a PUT request to the specified [handle] with the given [body].
   Future<dynamic> put({
     required String handle,
     dynamic body,
@@ -206,6 +223,7 @@ class GeneralRepository {
     );
   }
 
+  /// Sends a PATCH request to the specified [handle] with the given [body].
   Future<dynamic> patch({
     required String handle,
     dynamic body,
@@ -228,6 +246,7 @@ class GeneralRepository {
     );
   }
 
+  /// Sends a DELETE request to the specified [handle].
   Future<dynamic> delete({
     required String handle,
     String? baseUrl,
@@ -249,6 +268,7 @@ class GeneralRepository {
     );
   }
 
+  /// Sends a multipart POST request to the specified [handle] with the given [fields] and [files].
   Future<dynamic> multipartPost({
     required String handle,
     Map<String, String>? fields,
@@ -263,14 +283,10 @@ class GeneralRepository {
     var finalTimeout = timeOut ?? ApiConfig.responseTimeOut;
 
     if (enableLogs) {
-      developer.log(
-        'Multipart Request Fields: $fields',
-        name: 'package.bloc_rest_api.$handle',
-      );
-      developer.log(
-        'Multipart Request Files: $files',
-        name: 'package.bloc_rest_api.$handle',
-      );
+      developer.log('Multipart Request Fields: $fields',
+          name: 'package.bloc_rest_api.$handle');
+      developer.log('Multipart Request Files: $files',
+          name: 'package.bloc_rest_api.$handle');
     }
 
     var request = await _buildMultipartRequest(uri, fields, files, header);

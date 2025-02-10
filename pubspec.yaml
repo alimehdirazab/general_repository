@@ -1,6 +1,6 @@
 name: general_repository
-description: A general api repository to handle API responses
-version: 0.0.2
+description: A versatile API repository for handling API responses efficiently, designed for Flutter apps needing robust data management.
+version: 0.0.3
 homepage: https://github.com/alimehdirazab/general_repository
 repository: https://github.com/alimehdirazab/general_repository.git
 

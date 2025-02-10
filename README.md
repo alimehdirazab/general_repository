@@ -1,22 +1,23 @@
 # General Repository Package
 
 ## Overview
-The `general_repository` package provides a flexible and robust repository layer for handling HTTP requests in Dart and Flutter applications. It includes support for authentication, token refresh, logging, and various HTTP methods.
+The `general_repository` package provides a robust and flexible repository layer for handling HTTP requests in Dart and Flutter applications. It includes built-in authentication, automatic token refresh, detailed logging, error handling, and support for various HTTP methods.
 
 ## Features
-- Authentication support with token refresh
-- GET, POST, PUT, PATCH, DELETE, and Multipart requests
-- Customizable request headers
-- Logging for debugging purposes
-- Error handling with exceptions
+- Authentication with token refresh mechanism
+- Supports GET, POST, PUT, PATCH, DELETE, and Multipart requests
+- Automatic header management (Authorization and Content-Type)
+- Configurable request timeouts
+- Enhanced logging for debugging purposes
+- Exception handling for network errors, timeouts, and API failures
+- Customizable token storage and session management
 
 ## Installation
 Add the following dependency to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  general_repository:
-    path: '../general_repository'
+  general_repository: ^0.0.3
 ```
 
 Then, run:
@@ -26,8 +27,9 @@ flutter pub get
 ```
 
 ## Usage
+
 ### Initialization
-Create an instance of `GeneralRepository` by passing the required parameters:
+Create an instance of `GeneralRepository` by providing authentication parameters:
 
 ```dart
 import 'package:general_repository/general_repository.dart';
@@ -36,10 +38,10 @@ final repository = GeneralRepository(
   currentUserToken: 'your_access_token',
   refreshToken: 'your_refresh_token',
   updateTokens: (newAccessToken, newRefreshToken) {
-    // Update tokens in storage
+    // Store updated tokens securely
   },
   clearUser: () {
-    // Clear user session
+    // Handle user logout
   },
 );
 ```
@@ -101,17 +103,45 @@ print(response);
 ```
 
 ### Token Refresh Mechanism
-If an API call returns a `401 Unauthorized` error, the repository automatically attempts to refresh the token and retries the request. If refreshing fails, the `clearUser` callback is triggered to log out the user.
+If an API call returns a `401 Unauthorized` error, the repository automatically tries to refresh the token and retries the request. If refreshing fails, the `clearUser` callback is triggered to log out the user.
+
+```dart
+Future<String?> fetchNewToken() async {
+  final refreshHeader = {"Authorization": "Bearer \$refreshToken"};
+  final refreshUri = Uri.parse("https://api.example.com/refresh-token");
+
+  try {
+    final refreshResponse = await http.get(refreshUri, headers: refreshHeader);
+    if (refreshResponse.statusCode == 200) {
+      final responseJson = jsonDecode(refreshResponse.body);
+      updateTokens(responseJson["accessToken"], responseJson["refresh_token"]);
+      return responseJson["accessToken"];
+    } else {
+      clearUser();
+      return null;
+    }
+  } catch (e) {
+    throw FetchDataException("Network error while refreshing token.");
+  }
+}
+```
 
 ### Exception Handling
-The repository throws exceptions for network errors, timeouts, and failed responses:
+The repository handles exceptions for network errors, timeouts, and failed responses.
+
 ```dart
 try {
   final response = await repository.get(handle: '/secure-endpoint');
   print(response);
 } catch (e) {
-  print('Error: $e');
+  print('Error: \$e');
 }
+```
+
+### Logging
+The repository provides detailed logs for debugging:
+```dart
+final response = await repository.get(handle: '/endpoint', enableLogs: true);
 ```
 
 ## Error Handling
@@ -120,4 +150,5 @@ try {
 - API-specific errors are thrown based on response status codes.
 
 ## Conclusion
-The `general_repository` package simplifies API handling in Flutter applications by providing built-in authentication, token refresh, logging, and error handling. It is customizable and can be integrated seamlessly into any project.
+The `general_repository` package simplifies API handling in Flutter applications by providing built-in authentication, token refresh, logging, and error handling. It is highly customizable and can be seamlessly integrated into any project.
+
