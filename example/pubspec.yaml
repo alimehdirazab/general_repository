@@ -1,0 +1,18 @@
+name: general_repository_example
+description: An example project demonstrating the usage of the general_repository package.
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: '>=3.4.4 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  general_repository:
+    path: ../
+  shared_preferences:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

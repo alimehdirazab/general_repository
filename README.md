@@ -17,7 +17,7 @@ Add the following dependency to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  general_repository: ^0.0.3
+  general_repository: ^0.0.4
 ```
 
 Then, run:
